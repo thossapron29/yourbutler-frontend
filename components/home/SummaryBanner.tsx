@@ -1,118 +1,104 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useI18n } from "../../contexts/I18nContext";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { useFonts } from "../../hooks/useFonts";
-import { navigateGently, NavigationPresets } from "../../utils/navigation";
 
 interface SummaryBannerProps {
   hasExpiringItems: boolean;
-  expiringCount: number;
-  primaryPurple: string;
+  expiringCount: number; // expiring soon
+  expiredCount?: number; // new: expired items
 }
 
 export default function SummaryBanner({
   hasExpiringItems,
   expiringCount,
-  primaryPurple,
+  expiredCount = 0,
 }: SummaryBannerProps) {
-  const { t } = useI18n();
   const { getFontFamily } = useFonts();
+  // Compute variant once and render a single layout
+  const config = (() => {
+    if (expiredCount > 0) {
+      return {
+        bgColor: "#FFE4E9",
+        titleColor: "#1A1A1A",
+        subtitleColor: "#1A1A1A",
+        title:
+          expiredCount +
+          " " +
+          (expiredCount === 1 ? "Item Expired" : "Items Expired"),
+        subtitle:
+          "Item(s) are now added to the shopping list. Your shopping is now ready.",
+        icon: require("../../assets/images/home/expired.png"),
+      } as const;
+    }
+    if (hasExpiringItems) {
+      return {
+        bgColor: "#FFEFD4",
+        titleColor: "#1A1A1A",
+        subtitleColor: "#1A1A1A",
+        title:
+          expiringCount +
+          " " +
+          (expiringCount === 1 ? "Item Expiring Soon" : "Items Expiring Soon"),
+        subtitle:
+          "Item(s) are now added to the shopping list. Your shopping is now ready.",
+        icon: require("../../assets/images/home/expired_soon.png"),
+      } as const;
+    }
+    return {
+      bgColor: "#8756BC",
+      titleColor: "#FFFFFF",
+      subtitleColor: "#FFFFFF",
+      title: "All Good!",
+      subtitle: "No items expiring in the next 7 days.",
+      icon: require("../../assets/images/home/all_good.png"),
+    } as const;
+  })();
 
-  if (!hasExpiringItems) {
-    // All Good state
-    return (
-      <View style={styles.section}>
-        <View
-          style={[
-            styles.enhancedShoppingListCTA,
-            { backgroundColor: primaryPurple },
-          ]}
-        >
-          <View style={styles.enhancedShoppingCTAContent}>
-            <View style={styles.enhancedShoppingCTAIcon}>
-              <Ionicons name="checkmark-done" size={28} color="#fff" />
-            </View>
-            <View style={styles.enhancedShoppingCTATextContainer}>
+  return (
+    <View style={styles.section}>
+      <View
+        style={[
+          styles.enhancedShoppingListCTA,
+          { backgroundColor: config.bgColor },
+        ]}
+      >
+        <View style={styles.enhancedShoppingCTAContent}>
+          <View style={styles.enhancedShoppingCTATextContainer}>
+            <View style={styles.titleRow}>
+              <Image
+                source={config.icon}
+                style={styles.inlineIcon}
+                resizeMode="contain"
+              />
               <Text
                 style={[
                   styles.enhancedShoppingCTATitle,
-                  { fontFamily: getFontFamily("bold") },
+                  {
+                    fontFamily: getFontFamily("bold"),
+                    color: config.titleColor,
+                  },
                 ]}
               >
-                {t("home.allGood")}
-              </Text>
-              <Text
-                style={[
-                  styles.enhancedShoppingCTASubtitle,
-                  { fontFamily: getFontFamily("regular") },
-                ]}
-              >
-                {t("home.noItemsExpiring")}
+                {config.title}
               </Text>
             </View>
-          </View>
-          <Pressable
-            onPress={() =>
-              navigateGently("/(app)/my-items", NavigationPresets.gentle)
-            }
-            style={styles.circleButton}
-          >
-            <Ionicons name="arrow-forward" size={20} color={primaryPurple} />
-          </Pressable>
-        </View>
-      </View>
-    );
-  }
-
-  // Shopping List CTA state
-  return (
-    <View style={styles.section}>
-      <Pressable
-        style={[
-          styles.enhancedShoppingListCTA,
-          { backgroundColor: "#FF9500" },
-        ]}
-        onPress={() =>
-          navigateGently("/(app)/shopping-list", NavigationPresets.gentle)
-        }
-      >
-        <View style={styles.enhancedShoppingCTAContent}>
-          <View style={styles.enhancedShoppingCTAIcon}>
-            <Ionicons name="bag-add" size={28} color="#fff" />
-          </View>
-          <View style={styles.enhancedShoppingCTATextContainer}>
-            <Text
-              style={[
-                styles.enhancedShoppingCTATitle,
-                { fontFamily: getFontFamily("bold") },
-              ]}
-            >
-              {t("home.shoppingListReady")}
-            </Text>
             <Text
               style={[
                 styles.enhancedShoppingCTASubtitle,
-                { fontFamily: getFontFamily("regular") },
+                {
+                  fontFamily: getFontFamily("regular"),
+                  color: config.subtitleColor,
+                },
               ]}
             >
-              {t("home.itemsExpiringSoon", {
-                count: expiringCount,
-              })}
+              {config.subtitle}
             </Text>
           </View>
         </View>
-        <View style={styles.enhancedShoppingCTAAction}>
-          <Text
-            style={[
-              styles.enhancedShoppingCTAButtonText,
-              { fontFamily: getFontFamily("semibold") },
-            ]}
-          >
-            {t("home.viewList")}
-          </Text>
-          <Ionicons name="arrow-forward" size={20} color="#fff" />
+        <View style={styles.circleButton}>
+          <Ionicons name="arrow-forward" size={20} color="#111" />
         </View>
-      </Pressable>
+      </View>
     </View>
   );
 }
@@ -126,21 +112,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 24,
     borderRadius: 20,
+    // 🪽 Shadow: 0px 1px 2px 0px #0000001A
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    // 🧱 Border: 1px solid #EEEBF0
+    borderWidth: 1,
+    borderColor: "#EEEBF0",
   },
-  enhancedShoppingCTAIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
+  // Variant backgrounds now provided inline via config
   enhancedShoppingCTAContent: {
     flexDirection: "row",
     alignItems: "center",
@@ -155,11 +137,15 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.9)",
     lineHeight: 18,
   },
-  enhancedShoppingCTAAction: { alignItems: "center" },
-  enhancedShoppingCTAButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    marginBottom: 4,
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  inlineIcon: {
+    width: 14,
+    height: 14,
+    marginRight: 6,
   },
   circleButton: {
     width: 40,

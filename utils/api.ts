@@ -262,17 +262,15 @@ export interface ExpiringProduct {
   id: string;
   name: string;
   category_name: string;
-  expected_expiry: string;
+  expected_expiry: string | null;
   remind_before: number;
   status: string;
 }
 
 export interface ExpiringProductsResponse {
-  data: ExpiringProduct[];
-  total: number;
-  page: number;
-  limit: number;
-  total_pages: number;
+  items: ExpiringProduct[];
+  next_cursor?: string;
+  has_more?: boolean;
 }
 
 class ApiClient {
@@ -469,7 +467,7 @@ class ApiClient {
 
   // Device registration for push notifications
   async registerDevice(data: any): Promise<any> {
-    return this.request("/api/devices/register", {
+    return this.request("/devices/register", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -580,13 +578,9 @@ class ApiClient {
     limit: number = 20,
     days?: number
   ): Promise<ExpiringProductsResponse> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    if (days !== undefined) {
-      params.append("days", days.toString());
-    }
+    const params = new URLSearchParams();
+    if (days !== undefined) params.append("within_days", days.toString());
+    if (limit !== undefined) params.append("limit", String(limit));
     return this.request(`/api/dashboard/expiring?${params}`);
   }
 

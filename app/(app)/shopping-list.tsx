@@ -6,12 +6,12 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from "../../contexts/AuthContext";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import { apiClient, ProductItem } from "../../utils/api";
@@ -30,7 +30,7 @@ interface ShoppingItem {
 }
 
 export default function ShoppingList() {
-  const { user } = useAuth();
+  const { user, isAuthenticated, hasCompletedOnboarding } = useAuth();
   const router = useRouter();
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -50,16 +50,29 @@ export default function ShoppingList() {
   const warningColor = useThemeColor({}, "warningColor");
 
   useEffect(() => {
-    loadInitialData();
-  }, []);
+    if (isAuthenticated && hasCompletedOnboarding) {
+      loadInitialData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, hasCompletedOnboarding]);
 
   const loadInitialData = async () => {
+    if (!isAuthenticated || !hasCompletedOnboarding) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     await Promise.all([fetchProducts(), loadShoppingListFromStorage()]);
     setIsLoading(false);
   };
 
   const fetchProducts = async () => {
+    if (!isAuthenticated || !hasCompletedOnboarding) {
+      return;
+    }
+
     try {
       const response = await apiClient.getProducts();
       setProducts(response.data);

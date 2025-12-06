@@ -29,6 +29,9 @@ export interface Translations {
     daysLeft: string;
     noCategory: string;
     
+    // Monitoring message
+    monitoringMessage: string;
+    
     // Sections
     smartSuggestionsTitle: string;
     fromYourButler: string;

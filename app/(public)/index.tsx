@@ -1,10 +1,6 @@
-import AuthGuard from "../../components/AuthGuard";
-import Welcome from "./welcome";
+import { Redirect } from "expo-router";
 
-export default function Index() {
-  return (
-    <AuthGuard>
-      <Welcome />
-    </AuthGuard>
-  );
+export default function PublicIndex() {
+  // Redirect to welcome screen
+  return <Redirect href="/(public)/welcome" />;
 }

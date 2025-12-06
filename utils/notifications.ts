@@ -122,17 +122,30 @@ export async function unregisterDevice() {
   try {
     const pushToken = await AsyncStorage.getItem('push_token');
     if (pushToken) {
-      await apiClient.unregisterDevice(pushToken);
+      try {
+        await apiClient.unregisterDevice(pushToken);
+        console.log('Device unregistered successfully');
+      } catch (apiError: any) {
+        // Ignore "device not found" errors - device already unregistered
+        if (apiError.message?.includes('device not found')) {
+          console.log('Device was already unregistered');
+        } else {
+          console.error('Error unregistering device from API:', apiError);
+        }
+      }
     }
     
-    // Clear local storage
+    // Always clear local storage, even if API call fails
     await AsyncStorage.multiRemove(['push_token', 'device_registered']);
     
-    console.log('Device unregistered successfully');
   } catch (error) {
     console.error('Error unregistering device:', error);
-    // Even if API fails, clear local storage
-    await AsyncStorage.multiRemove(['push_token', 'device_registered']);
+    // Even if everything fails, try to clear local storage
+    try {
+      await AsyncStorage.multiRemove(['push_token', 'device_registered']);
+    } catch (storageError) {
+      console.error('Error clearing device storage:', storageError);
+    }
   }
 }
 

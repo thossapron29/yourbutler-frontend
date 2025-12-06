@@ -522,13 +522,13 @@ export default function AddProduct() {
       resetForm();
 
       if (isFirstProduct) {
-        router.replace("/product-added-success" as any);
+        router.replace("/(public)/product-added-success");
       } else {
         // ใช้ replace แทน push และเพิ่ม timestamp เพื่อ trigger refresh
         router.replace({
           pathname: "/(app)/home",
           params: { refresh: Date.now().toString() },
-        } as any);
+        });
       }
     } catch (error) {
       console.error("Failed to create product:", error);

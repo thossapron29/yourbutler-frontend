@@ -5,18 +5,25 @@ import {
   Animated,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import ExpiringItemsSection from "../../components/home/ExpiringItemsSection";
+import { SafeAreaView } from "react-native-safe-area-context";
 import HeaderSection from "../../components/home/HeaderSection";
 import QuickAddSection from "../../components/home/QuickAddSection";
 import StatsSection from "../../components/home/StatsSection";
 import SummaryBanner from "../../components/home/SummaryBanner";
 import MarkAsPurchasedModal from "../../components/MarkAsPurchasedModal";
+import {
+  BorderRadius,
+  ColorPalette,
+  Shadows,
+  Spacing,
+  Typography,
+} from "../../constants/DesignSystem";
+import { useAuth } from "../../contexts/AuthContext";
 import { useI18n } from "../../contexts/I18nContext";
 import { useFonts } from "../../hooks/useFonts";
 import {
@@ -40,8 +47,9 @@ const categoryIcons: Record<string, IconName> = {
 };
 
 export default function Home() {
-  const { t } = useI18n();
-  const { fontsLoaded } = useFonts();
+  const { isAuthenticated, hasCompletedOnboarding } = useAuth();
+  const { t, language } = useI18n();
+  const { fontsLoaded, getLocalizedFontFamily } = useFonts();
 
   const [dashboardSummary, setDashboardSummary] =
     useState<DashboardSummary | null>(null);
@@ -59,12 +67,10 @@ export default function Home() {
   // Use gentle page transition hook
   const { animatedStyle } = usePageTransition(TransitionPresets.page);
 
-  // Theme colors - Using available colors with soft approach
+  // Theme colors
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
-
-  // Define our soft color palette with better contrast
-  const primaryPurple = "#5F488B"; // From color palette
+  const primaryPurple = ColorPalette.purple[500];
 
   // Simple greeting
   const getGreeting = useCallback(() => {
@@ -76,18 +82,29 @@ export default function Home() {
   }, [t]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    // Only fetch data if user is authenticated and completed onboarding
+    if (isAuthenticated && hasCompletedOnboarding) {
+      fetchDashboardData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, hasCompletedOnboarding]);
 
   const fetchDashboardData = useCallback(async () => {
+    // Double check authentication before making API calls
+    if (!isAuthenticated || !hasCompletedOnboarding) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const [summaryResponse, expiringResponse] = await Promise.all([
         apiClient.getDashboardSummary(),
         apiClient.getExpiringProducts(1, 10),
       ]);
 
-      setDashboardSummary(summaryResponse);
-      setExpiringItems(expiringResponse.data);
+  setDashboardSummary(summaryResponse);
+  setExpiringItems(expiringResponse.items || []);
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
       const errorMessage =
@@ -98,7 +115,7 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, hasCompletedOnboarding]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -113,9 +130,17 @@ export default function Home() {
 
   if (!fontsLoaded || isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor }]}
+        edges={["top", "left", "right"]}
+      >
         <View style={styles.centerContent}>
-          <Text style={[styles.loadingText, { color: textColor }]}>
+          <Text
+            style={[
+              styles.loadingText,
+              { color: textColor, fontFamily: getLocalizedFontFamily(language, "medium") },
+            ]}
+          >
             {t("common.loading")}
           </Text>
         </View>
@@ -124,7 +149,7 @@ export default function Home() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -144,23 +169,19 @@ export default function Home() {
           {/* Header */}
           <HeaderSection greeting={getGreeting()} />
 
-          {/* Summary Banner */}
-          <SummaryBanner
-            hasExpiringItems={expiringItems?.length > 0}
-            expiringCount={expiringItems?.length}
-            primaryPurple={primaryPurple}
-          />
+          <View style={{ marginTop: -Math.round(193 * 0.3) }}>
+            <SummaryBanner
+              hasExpiringItems={
+                (dashboardSummary?.expiring_soon_count || 0) > 0
+              }
+              expiringCount={dashboardSummary?.expiring_soon_count || 0}
+              expiredCount={dashboardSummary?.expired_count || 0}
+            />
+          </View>
 
-          {/* Stats Dashboard */}
+          {/* Stats summary: Active, Expiring soon, Expired */}
           <StatsSection
             dashboardSummary={dashboardSummary}
-            primaryPurple={primaryPurple}
-          />
-
-          {/* Expiring Items */}
-          <ExpiringItemsSection
-            expiringItems={expiringItems}
-            onMarkAsPurchased={handleMarkAsPurchased}
             primaryPurple={primaryPurple}
           />
 
@@ -176,7 +197,11 @@ export default function Home() {
 
       {/* Floating Add Button */}
       <Pressable
-        style={[styles.floatingButton, { backgroundColor: primaryPurple }]}
+        style={({ pressed }) => [
+          styles.floatingButton,
+          { backgroundColor: primaryPurple },
+          pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] },
+        ]}
         onPress={() =>
           navigateGently("/(app)/add-product", NavigationPresets.gentle)
         }
@@ -199,7 +224,7 @@ export default function Home() {
           productName={selectedProduct.name}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -207,20 +232,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   centerContent: { flex: 1, justifyContent: "center", alignItems: "center" },
   scrollView: { flex: 1 },
-  loadingText: { fontSize: 16 },
+  loadingText: { 
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium as any,
+  },
   floatingButton: {
     position: "absolute",
-    bottom: 24,
-    right: 24,
+    bottom: Spacing[6],
+    right: Spacing[6],
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: BorderRadius.full,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    ...Shadows.sm,
   },
 });

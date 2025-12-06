@@ -30,6 +30,9 @@ export const thTranslations: Translations = {
     daysLeft: 'ใช้ได้อีก {{days}} วัน',
     noCategory: 'ยังไม่จัดหมวดหมู่',
     
+    // Monitoring message
+    monitoringMessage: 'Alfred ได้เฝ้าดูของใช้ของคุณในวันนี้แล้ว และทุกอย่างดูดีมาก!',
+    
     // Sections
     smartSuggestionsTitle: '✨ การแจ้งเตือนอ่อนโยน',
     fromYourButler: 'ฉันสังเกตเห็นบางอย่าง...',

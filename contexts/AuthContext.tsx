@@ -173,8 +173,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      // Unregister device for push notifications
-      await unregisterDevice();
+      // Only unregister device if user is logged in
+      if (user) {
+        await unregisterDevice();
+      }
 
       await AsyncStorage.multiRemove([
         STORAGE_KEYS.ACCESS_TOKEN,

@@ -10,7 +10,7 @@ export default function ProductAddedSuccess() {
 
   const handleGoHome = () => {
     // Navigate to home page
-    router.replace("/home" as any);
+    router.replace("/(app)/home");
   };
 
   return (

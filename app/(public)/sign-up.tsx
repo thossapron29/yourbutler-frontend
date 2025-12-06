@@ -14,6 +14,13 @@ import {
   Text,
   View,
 } from "react-native";
+import {
+  ColorPalette,
+  Typography,
+  Spacing,
+  BorderRadius,
+  Shadows,
+} from "@/constants/DesignSystem";
 
 const { height: deviceHeight } = Dimensions.get("window");
 const halfHeight = deviceHeight / 2;
@@ -72,7 +79,7 @@ export default function SignUp() {
         {/* Sign-in banner image */}
         <View style={styles.imageContainer}>
           <Image
-            source={require("../../assets/images/signin/signin-banner.png")}
+            source={require("../../assets/images/signin/signin_butler_figma.png")}
             style={styles.bannerImage}
             resizeMode="contain"
           />
@@ -87,36 +94,36 @@ export default function SignUp() {
           </Text>
         </View>
         <View style={{ gap: 12, marginTop: 24 }}>
-          <Pressable style={styles.appleButton} onPress={onAppleSignIn}>
-            <Ionicons
-              name="logo-apple"
-              size={20}
-              color="#fff"
-              style={{ marginRight: 8 }}
-            />
+          <Pressable
+            style={({ pressed }) => [
+              styles.appleButton,
+              pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] },
+            ]}
+            onPress={onAppleSignIn}
+          >
+            <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
             <Text style={styles.appleButtonText}>Continue With Apple</Text>
           </Pressable>
-          <Pressable style={styles.googleButton} onPress={onGoogleSignIn}>
-            <Ionicons
-              name="logo-google"
-              size={20}
-              color="#EA4335"
-              style={{ marginRight: 8 }}
-            />
+          <Pressable
+            style={({ pressed }) => [
+              styles.googleButton,
+              pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] },
+            ]}
+            onPress={onGoogleSignIn}
+          >
+            <Ionicons name="logo-google" size={20} color="#EA4335" />
             <Text style={styles.googleButtonText}>Continue With Google</Text>
           </Pressable>
 
           {/* Dev Login Button */}
           <Pressable
-            style={styles.devButton}
+            style={({ pressed }) => [
+              styles.devButton,
+              pressed && { opacity: 0.7, transform: [{ scale: 0.98 }] },
+            ]}
             onPress={() => router.push("/(public)/dev-login")}
           >
-            <Ionicons
-              name="code"
-              size={20}
-              color="#666"
-              style={{ marginRight: 8 }}
-            />
+            <Ionicons name="code" size={20} color={ColorPalette.gray[600]} />
             <Text style={styles.devButtonText}>Dev Login</Text>
           </Pressable>
         </View>
@@ -142,19 +149,20 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: ColorPalette.gray[50],
   },
   topSection: {
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    backgroundColor: ColorPalette.gray[100],
   },
   imageContainer: {
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
     height: "100%",
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
   },
   bannerImage: {
     width: "100%",
@@ -162,78 +170,81 @@ const styles = StyleSheet.create({
     maxHeight: 250,
   },
   bottomSection: {
-    padding: 24,
-    gap: 16,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
     justifyContent: "space-around",
   },
   headline: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 4,
+    ...Typography.presets.h3,
+    color: ColorPalette.gray[900],
+    marginBottom: Spacing.xs,
   },
   subtitle: {
-    fontSize: 15,
-    color: "#666",
-    lineHeight: 22,
+    ...Typography.presets.bodyRegular,
+    color: ColorPalette.gray[600],
+    lineHeight: Typography.fontSize.base * Typography.lineHeight.normal,
   },
   appleButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#000",
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: "#000000",
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     justifyContent: "center",
+    gap: Spacing.sm,
+    ...Shadows.sm,
   },
   appleButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+    ...Typography.presets.bodyMedium,
+    color: "#FFFFFF",
+    fontWeight: Typography.fontWeight.semibold,
   },
   googleButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#eee",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderColor: ColorPalette.gray[300],
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     justifyContent: "center",
+    gap: Spacing.sm,
+    ...Shadows.xs,
   },
   googleButtonText: {
-    color: "#222",
-    fontWeight: "600",
-    fontSize: 16,
+    ...Typography.presets.bodyMedium,
+    color: ColorPalette.gray[900],
+    fontWeight: Typography.fontWeight.semibold,
   },
   devButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f8f8f8",
+    backgroundColor: ColorPalette.gray[100],
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderColor: ColorPalette.gray[400],
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     justifyContent: "center",
+    gap: Spacing.sm,
   },
   devButtonText: {
-    color: "#666",
-    fontWeight: "600",
-    fontSize: 16,
+    ...Typography.presets.bodyMedium,
+    color: ColorPalette.gray[600],
+    fontWeight: Typography.fontWeight.semibold,
   },
   linksRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
-    paddingHorizontal: 8,
+    marginTop: Spacing.xl,
+    paddingHorizontal: Spacing.sm,
   },
   link: {
-    color: "#8756BC",
-    fontSize: 13,
+    ...Typography.presets.caption,
+    color: ColorPalette.purple[400],
     textDecorationLine: "underline",
-    marginHorizontal: 4,
+    marginHorizontal: Spacing.xs,
   },
 });

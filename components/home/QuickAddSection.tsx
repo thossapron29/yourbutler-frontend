@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  BorderRadius,
+  ColorPalette,
+  Spacing,
+  Typography,
+} from "../../constants/DesignSystem";
 import { useI18n } from "../../contexts/I18nContext";
 import { useFonts } from "../../hooks/useFonts";
 import { useThemeColor } from "../../hooks/useThemeColor";
@@ -16,47 +22,64 @@ export default function QuickAddSection({
   categoryIcons,
   primaryPurple,
 }: QuickAddSectionProps) {
-  const { t } = useI18n();
-  const { getFontFamily } = useFonts();
+  const { t, language } = useI18n();
+  const { getLocalizedFontFamily } = useFonts();
   const cardBackground = useThemeColor({}, "cardBackground");
   const textColor = useThemeColor({}, "text");
   const subtitleColor = useThemeColor({}, "subtitleText");
   const borderColor = useThemeColor({}, "borderColor");
 
-  const renderQuickAddCategory = (categoryName: string, icon: IconName) => (
+  // 🧭 helper: สร้างเส้นทางไปหน้า add-product พร้อมพารามิเตอร์หมวดหมู่ (ถ้ามี)
+  const buildAddProductRoute = (categoryName?: string) => {
+    if (categoryName) {
+      const categoryParam = encodeURIComponent(categoryName);
+      return `/(app)/add-product?category=${categoryParam}` as any;
+    }
+    return "/(app)/add-product" as any;
+  };
+
+  // 🧩 QuickCategory: ปุ่มเพิ่มด่วนหนึ่งรายการ
+  const QuickCategory = ({ name, icon }: { name: string; icon: IconName }) => (
     <Pressable
-      key={categoryName}
-      style={[styles.quickCategoryButton, { backgroundColor: cardBackground }]}
-      onPress={() => {
-        const categoryParam = categoryName
-          ? encodeURIComponent(categoryName)
-          : "";
-        const route = categoryParam
-          ? (`/(app)/add-product?category=${categoryParam}` as any)
-          : ("/(app)/add-product" as any);
-        navigateGently(route, NavigationPresets.gentle);
-      }}
+      key={name}
+      style={({ pressed }) => [
+        styles.quickCategoryButton,
+        { backgroundColor: cardBackground },
+        pressed && { opacity: 0.7 },
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={name}
+      onPress={() =>
+        navigateGently(buildAddProductRoute(name), NavigationPresets.gentle)
+      }
     >
-      <Ionicons name={icon} size={20} color={primaryPurple} />
+      <View style={styles.iconContainer}>
+        <Ionicons name={icon} size={24} color={primaryPurple} />
+      </View>
       <Text
         style={[
           styles.quickCategoryText,
-          { color: textColor, fontFamily: getFontFamily("medium") },
+          {
+            color: textColor,
+            fontFamily: getLocalizedFontFamily(language, "regular"),
+          },
         ]}
       >
-        {categoryName
-          ? t(`categories.${categoryName.toLowerCase()}`)
-          : categoryName}
+        {name ? t(`categories.${name.toLowerCase()}`) : name}
       </Text>
     </Pressable>
   );
 
   return (
     <View style={styles.section}>
+      {/* ⚡ Quick Add: ส่วนลัดสำหรับเพิ่มรายการตามหมวดหมู่ยอดนิยม */}
       <Text
         style={[
           styles.secondarySectionTitle,
-          { color: subtitleColor, fontFamily: getFontFamily("semibold") },
+          {
+            color: subtitleColor,
+            fontFamily: getLocalizedFontFamily(language, "semibold"),
+          },
         ]}
       >
         {t("home.quickAdd")}
@@ -69,12 +92,12 @@ export default function QuickAddSection({
         {Object.entries(categoryIcons)
           .filter(([categoryName, icon]) => categoryName && icon)
           ?.slice(0, 4)
-          .map(([categoryName, icon]) =>
-            renderQuickAddCategory(categoryName, icon)
-          )}
-        {/* Show more button */}
+          .map(([categoryName, icon]) => (
+            <QuickCategory key={categoryName} name={categoryName} icon={icon} />
+          ))}
+        {/* ➕ Show more button */}
         <Pressable
-          style={[
+          style={({ pressed }) => [
             styles.quickCategoryButton,
             styles.showMoreButton,
             {
@@ -82,22 +105,27 @@ export default function QuickAddSection({
               borderColor,
               borderWidth: 1,
             },
+            pressed && { opacity: 0.7 },
           ]}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.more")}
           onPress={() =>
             navigateGently("/(app)/add-product", NavigationPresets.gentle)
           }
         >
-          <Ionicons
-            name="add-circle-outline"
-            size={20}
-            color={subtitleColor}
-          />
+          <View style={styles.iconContainer}>
+            <Ionicons
+              name="add-circle-outline"
+              size={24}
+              color={subtitleColor}
+            />
+          </View>
           <Text
             style={[
               styles.quickCategoryText,
               {
                 color: subtitleColor,
-                fontFamily: getFontFamily("medium"),
+                fontFamily: getLocalizedFontFamily(language, "regular"),
               },
             ]}
           >
@@ -110,24 +138,39 @@ export default function QuickAddSection({
 }
 
 const styles = StyleSheet.create({
-  section: { paddingHorizontal: 20, paddingVertical: 16 },
-  secondarySectionTitle: { fontSize: 16, marginBottom: 16 },
+  section: {
+    paddingHorizontal: Spacing[5],
+    paddingVertical: Spacing[4],
+  },
+  secondarySectionTitle: {
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.bold as any,
+    marginBottom: Spacing[4],
+    lineHeight: 19.2,
+  },
   quickCategoriesContainer: {
-    paddingVertical: 10,
+    paddingVertical: Spacing[2],
   },
   quickCategoryButton: {
     alignItems: "center",
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    marginRight: 12,
-    borderRadius: 16,
-    minWidth: 85,
-    shadowColor: "rgba(95, 72, 139, 0.08)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 6,
-    elevation: 3,
+    marginRight: Spacing[3],
+    minWidth: 64,
   },
-  quickCategoryText: { fontSize: 13, marginTop: 6, textAlign: "center" },
-  showMoreButton: { opacity: 0.8 },
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.full,
+    backgroundColor: ColorPalette.gray[100],
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Spacing[2],
+  },
+  quickCategoryText: {
+    fontSize: Typography.fontSize.sm,
+    lineHeight: 14.4,
+    textAlign: "center",
+  },
+  showMoreButton: {
+    opacity: 0.8,
+  },
 });

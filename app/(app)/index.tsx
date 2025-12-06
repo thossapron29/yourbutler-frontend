@@ -1,13 +1,6 @@
-import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { Redirect } from "expo-router";
 
 export default function AppIndex() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirect ไปหน้า home เมื่อเข้า app routes
-    router.replace("/home");
-  }, [router]);
-
-  return null;
+  // Redirect to home screen
+  return <Redirect href="/(app)/home" />;
 }

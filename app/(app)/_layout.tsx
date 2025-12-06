@@ -1,17 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { Platform } from "react-native";
-import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useThemeColor } from "../../hooks/useThemeColor";
 import { useNotifications } from "../../hooks/useNotifications";
 
 export default function AppLayout() {
-  const { isAuthenticated, hasCompletedOnboarding, isLoading } = useAuth();
-  const router = useRouter();
-  const { colorScheme } = useTheme(); // ใช้ custom theme context แทน useColorScheme
+  const { colorScheme } = useTheme();
 
   // Initialize notifications
   useNotifications();
@@ -21,23 +16,6 @@ export default function AppLayout() {
   const tintColor = useThemeColor({}, "tint");
   const tabIconDefault = useThemeColor({}, "tabIconDefault");
   const borderColor = useThemeColor({}, "borderColor");
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        // ถ้าไม่ได้ login ให้กลับไปหน้า welcome
-        router.replace("/(public)/welcome");
-      } else if (!hasCompletedOnboarding) {
-        // ถ้า login แล้วแต่ยังไม่เสร็จ onboarding ให้กลับไปหน้า onboarding
-        router.replace("/(public)/onboarding");
-      }
-    }
-  }, [isAuthenticated, hasCompletedOnboarding, isLoading, router]);
-
-  // แสดง loading ระหว่างเช็ค auth state
-  if (isLoading || !isAuthenticated || !hasCompletedOnboarding) {
-    return null; // หรือแสดง loading spinner
-  }
 
   return (
     <>

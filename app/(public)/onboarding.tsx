@@ -16,6 +16,13 @@ import {
   TextInput,
   View,
 } from "react-native";
+import {
+  BorderRadius,
+  ColorPalette,
+  Shadows,
+  Spacing,
+  Typography,
+} from "../../constants/DesignSystem";
 import { useAuth } from "../../contexts/AuthContext";
 import { apiClient } from "../../utils/api";
 
@@ -37,8 +44,9 @@ const steps = [
     type: "input",
   },
   {
-    title: "Stay on Track with Timely Reminders",
-    desc: "Get timely reminders when your household items are running low or expiring.\n\nDon't worry — you can still see updates inside the app if you prefer not to turn on notifications.",
+    subtitle: "Stay up-to-date",
+    title: "Make Sure You Never Miss a Refill",
+    desc: "Get timely reminders when your household items are running low or expiring. Don't worry — you can still see updates inside the app if you prefer not to turn on notifications.",
     type: "notification",
   },
 ];
@@ -258,7 +266,7 @@ export default function Onboarding() {
               {step === 0 && (
                 /* Butler Icon for first step */
                 <Image
-                  source={require("../../assets/images/onboarding/onboard.png")}
+                  source={require("../../assets/images/onboarding/robutler_complete_figma.png")}
                   style={styles.onboardImage}
                   resizeMode="contain"
                 />
@@ -266,7 +274,7 @@ export default function Onboarding() {
               {step === 1 && (
                 /* User Icon for second step */
                 <Image
-                  source={require("../../assets/images/onboarding/onboard.png")}
+                  source={require("../../assets/images/onboarding/robutler_complete_figma.png")}
                   style={styles.onboardImage}
                   resizeMode="contain"
                 />
@@ -312,10 +320,11 @@ export default function Onboarding() {
                         {steps[step].suggestions.map((suggestion, index) => (
                           <Pressable
                             key={index}
-                            style={[
+                            style={({ pressed }) => [
                               styles.suggestionChip,
                               butlerName === suggestion &&
                                 styles.suggestionChipActive,
+                              pressed && { opacity: 0.7 },
                             ]}
                             onPress={() => setButlerName(suggestion)}
                           >
@@ -334,7 +343,10 @@ export default function Onboarding() {
                     </View>
                   )}
                   <Pressable
-                    style={styles.button}
+                    style={({ pressed }) => [
+                      styles.button,
+                      pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+                    ]}
                     onPress={handleContinue}
                     disabled={isLoading}
                   >
@@ -354,30 +366,27 @@ export default function Onboarding() {
               )}
               {steps[step].type === "notification" && (
                 <>
+                  {steps[step].subtitle && (
+                    <Text style={styles.subtitle}>{steps[step].subtitle}</Text>
+                  )}
                   <Text style={styles.desc}>{steps[step].desc}</Text>
-                  <View
-                    style={{ flexDirection: "row", gap: 12, marginTop: 16 }}
-                  >
-                    <Pressable
-                      style={[
-                        styles.button,
-                        {
-                          backgroundColor: "#fff",
-                          borderWidth: 1,
-                          borderColor: "#E0E0E0",
-                          flex: 1,
-                        },
-                      ]}
-                      onPress={handleSkipNotifications}
-                      disabled={isLoading}
-                    >
-                      <Text style={[styles.buttonText, { color: "#222" }]}>
-                        {isLoading ? "Loading..." : "Maybe Later"}
-                      </Text>
-                    </Pressable>
-                  </View>
                   <Pressable
-                    style={[styles.button, { marginTop: 12 }]}
+                    style={({ pressed }) => [
+                      styles.secondaryButton,
+                      pressed && { opacity: 0.7 },
+                    ]}
+                    onPress={handleSkipNotifications}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.secondaryButtonText}>
+                      {isLoading ? "Loading..." : "Maybe Later"}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.button,
+                      pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+                    ]}
                     onPress={handleEnableNotifications}
                     disabled={isLoading}
                   >
@@ -406,52 +415,52 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 24,
-    paddingTop: 48,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: Spacing[6],
+    paddingTop: Spacing[12],
     alignItems: "stretch",
   },
   progressBarWrap: {
     flexDirection: "row",
     height: 6,
-    borderRadius: 3,
+    borderRadius: BorderRadius.xs,
     overflow: "hidden",
-    marginBottom: 24,
+    marginBottom: Spacing[6],
   },
   progressBar: {
     height: 6,
-    borderRadius: 3,
+    borderRadius: BorderRadius.xs,
   },
   stepIndicator: {
-    color: "#888",
-    fontSize: 15,
-    marginBottom: 8,
+    color: ColorPalette.gray[600],
+    fontSize: Typography.fontSize.sm,
+    marginBottom: Spacing[2],
   },
   headline: {
-    fontSize: 32,
-    fontWeight: "700",
-    marginBottom: 24,
-    color: "#111",
+    ...Typography.presets.h3,
+    color: ColorPalette.gray[900],
+    marginBottom: Spacing[6],
   },
   subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 16,
-    lineHeight: 22,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium as any,
+    color: ColorPalette.gray[600],
+    marginBottom: Spacing[4],
+    lineHeight: 19.2,
   },
   placeholderBox: {
     width: "100%",
     height: 200,
-    borderRadius: 20,
-    marginBottom: 32,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing[8],
     justifyContent: "center",
     alignItems: "center",
   },
   modernIcon: {
     width: 80,
     height: 80,
-    backgroundColor: "#E8F0FF",
-    borderRadius: 40,
+    backgroundColor: ColorPalette.purple[50],
+    borderRadius: BorderRadius.full,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
@@ -461,7 +470,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   iconEmoji: {
-    fontSize: 32,
+    fontSize: Typography.fontSize["2xl"],
   },
   iconAccent: {
     position: "absolute",
@@ -469,8 +478,8 @@ const styles = StyleSheet.create({
     right: -5,
     width: 24,
     height: 24,
-    backgroundColor: "#FFF9E6",
-    borderRadius: 12,
+    backgroundColor: ColorPalette.purple[50],
+    borderRadius: BorderRadius.full,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -478,80 +487,107 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   label: {
-    fontSize: 16,
-    color: "#222",
-    marginBottom: 8,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium as any,
+    color: ColorPalette.gray[800],
+    marginBottom: Spacing[2],
   },
   button: {
-    backgroundColor: "#8756BC",
-    borderRadius: 100,
-    paddingVertical: 16,
-    marginTop: 16,
+    backgroundColor: ColorPalette.purple[500],
+    borderRadius: BorderRadius.full,
+    paddingVertical: Spacing[4],
+    paddingHorizontal: Spacing[3],
+    marginTop: Spacing[4],
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    ...Shadows.sm,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 18,
+    color: "#FFFFFF",
+    fontWeight: Typography.fontWeight.medium as any,
+    fontSize: Typography.fontSize.md,
+    lineHeight: 19.2,
   },
   desc: {
-    fontSize: 15,
-    color: "#666",
-    lineHeight: 22,
-    marginBottom: 8,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium as any,
+    color: ColorPalette.gray[600],
+    lineHeight: 19.2,
+    marginBottom: Spacing[2],
   },
   input: {
     width: "100%",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: Spacing[4],
+    paddingHorizontal: Spacing[6],
+    borderRadius: BorderRadius.full,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
-    backgroundColor: "#fff",
-    fontSize: 16,
-    marginBottom: 8,
-    color: "#222",
+    borderColor: ColorPalette.gray[300],
+    backgroundColor: "#FFFFFF",
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium as any,
+    lineHeight: 19.2,
+    marginBottom: Spacing[2],
+    color: ColorPalette.gray[800],
   },
   backButton: {
-    marginRight: 8,
+    marginRight: Spacing[2],
     padding: 2,
     justifyContent: "center",
     alignItems: "center",
   },
   suggestionsContainer: {
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: Spacing[4],
+    marginBottom: Spacing[2],
   },
   suggestionsLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium as any,
+    color: ColorPalette.gray[600],
+    marginBottom: Spacing[2],
   },
   suggestionsChips: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: Spacing[2],
   },
   suggestionChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: "#F5F5F5",
-    borderRadius: 20,
+    paddingHorizontal: Spacing[3],
+    paddingVertical: Spacing[2],
+    backgroundColor: ColorPalette.gray[50],
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: ColorPalette.gray[300],
   },
   suggestionChipActive: {
-    backgroundColor: "#E6DAF7",
-    borderColor: "#D8C5F2",
+    backgroundColor: ColorPalette.purple[100],
+    borderColor: ColorPalette.purple[200],
   },
   suggestionChipText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.medium as any,
+    lineHeight: 14.4,
+    color: ColorPalette.gray[600],
   },
   suggestionChipTextActive: {
-    color: "#8756BC",
+    color: ColorPalette.purple[500],
+  },
+  secondaryButton: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: ColorPalette.gray[300],
+    paddingVertical: Spacing[4],
+    paddingHorizontal: Spacing[3],
+    marginTop: Spacing[4],
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryButtonText: {
+    color: ColorPalette.gray[800],
+    fontWeight: Typography.fontWeight.medium as any,
+    fontSize: Typography.fontSize.md,
+    lineHeight: 19.2,
   },
 });

@@ -1,5 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  ImageSourcePropType,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useI18n } from "../../contexts/I18nContext";
 import { useFonts } from "../../hooks/useFonts";
 import { useThemeColor } from "../../hooks/useThemeColor";
@@ -10,194 +15,183 @@ interface StatsSectionProps {
   primaryPurple: string;
 }
 
+// 🧩 StatCard: การ์ดสรุป 1 ใบที่แสดงจำนวน + ชื่อ + งานศิลป์มุมขวาบน
+interface StatCardProps {
+  count: number;
+  label: string;
+  backgroundColor: string;
+  countColor: string;
+  labelColor: string;
+  imageSource: ImageSourcePropType;
+  countFontFamily: string;
+  labelFontFamily: string;
+}
+
+function StatCard({
+  count,
+  label,
+  backgroundColor,
+  countColor,
+  labelColor,
+  imageSource,
+  countFontFamily,
+  labelFontFamily,
+}: StatCardProps) {
+  return (
+    <View style={[styles.card, { backgroundColor }]}>
+      {/* 🧮 เนื้อหา: ตัวเลขและชื่อ อยู่บนสุดเพื่อทับเลเยอร์วงกลม */}
+      <View style={styles.cardContent}>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={[
+              styles.count,
+              { color: countColor, fontFamily: countFontFamily },
+            ]}
+          >
+            {count}
+          </Text>
+          <Text
+            style={[
+              styles.label,
+              { color: labelColor, fontFamily: labelFontFamily },
+            ]}
+          >
+            {label}
+          </Text>
+        </View>
+      </View>
+
+      {/* 🎨 งานศิลป์มุมขวาบน: วงกลม 2 ชั้น + รูปไอเท็ม */}
+      <View style={styles.cornerArt} pointerEvents="none">
+        <View style={styles.circleOne} />
+        <View style={styles.circleTwo} />
+        <Image
+          source={imageSource}
+          style={styles.cornerImage}
+          resizeMode="contain"
+        />
+      </View>
+    </View>
+  );
+}
+
 export default function StatsSection({
   dashboardSummary,
   primaryPurple,
 }: StatsSectionProps) {
-  const { t } = useI18n();
-  const { getFontFamily } = useFonts();
+  const { t, language } = useI18n();
+  const { getLocalizedFontFamily } = useFonts();
   const cardBackground = useThemeColor({}, "cardBackground");
   const textColor = useThemeColor({}, "text");
 
   return (
     <View style={styles.statsSection}>
-      {/* Primary Stat - Most Important */}
-      {(dashboardSummary?.expiring_soon_count || 0) > 0 && (
-        <View style={[styles.primaryStatCard, { backgroundColor: "#FF9500" }]}>
-          <View style={styles.primaryStatContent}>
-            <View style={styles.primaryStatIcon}>
-              <Ionicons name="warning" size={24} color="#fff" />
-            </View>
-            <View style={styles.primaryStatText}>
-              <Text
-                style={[
-                  styles.primaryStatNumber,
-                  { fontFamily: getFontFamily("bold") },
-                ]}
-              >
-                {dashboardSummary?.expiring_soon_count}
-              </Text>
-              <Text
-                style={[
-                  styles.primaryStatLabel,
-                  { fontFamily: getFontFamily("medium") },
-                ]}
-              >
-                {t("home.expiringSoon")}
-              </Text>
-              <Text
-                style={[
-                  styles.primaryStatSubtext,
-                  { fontFamily: getFontFamily("regular") },
-                ]}
-              >
-                Needs attention
-              </Text>
-            </View>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#fff"
-            opacity={0.7}
-          />
-        </View>
-      )}
+      {/* 📊 แถวสรุป 3 การ์ด: Active | Expiring soon | Expired */}
+      <View style={styles.cardsRow}>
+        {/* ✅ Active items */}
+        <StatCard
+          count={dashboardSummary?.active_count ?? 0}
+          label={t("home.activeItems")}
+          backgroundColor={cardBackground}
+          countColor={primaryPurple}
+          labelColor={textColor}
+          imageSource={require("../../assets/images/home/all_good_item.png")}
+          countFontFamily={getLocalizedFontFamily(language, "bold")}
+          labelFontFamily={getLocalizedFontFamily(language, "medium")}
+        />
 
-      {/* Secondary Stats Grid */}
-      <View style={styles.secondaryStatsGrid}>
-        <View
-          style={[
-            styles.secondaryStatCard,
-            { backgroundColor: cardBackground },
-          ]}
-        >
-          <Text
-            style={[
-              styles.secondaryStatNumber,
-              { color: primaryPurple, fontFamily: getFontFamily("bold") },
-            ]}
-          >
-            {dashboardSummary?.active_count || 0}
-          </Text>
-          <Text
-            style={[
-              styles.secondaryStatLabel,
-              { color: textColor, fontFamily: getFontFamily("medium") },
-            ]}
-          >
-            {t("home.activeItems")}
-          </Text>
-        </View>
+        {/* ⏰ Expiring soon */}
+        <StatCard
+          count={dashboardSummary?.expiring_soon_count ?? 0}
+          label={t("home.expiringSoon")}
+          backgroundColor="#FFFFFF"
+          countColor="#FFB020"
+          labelColor="#4A4A4A"
+          imageSource={require("../../assets/images/home/expired_soon_item.png")}
+          countFontFamily={getLocalizedFontFamily(language, "bold")}
+          labelFontFamily={getLocalizedFontFamily(language, "medium")}
+        />
 
-        <View
-          style={[
-            styles.secondaryStatCard,
-            {
-              backgroundColor: "#FFF3E0",
-              borderColor: "#FFE0B2",
-              borderWidth: 1,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.secondaryStatNumber,
-              { color: "#F57C00", fontFamily: getFontFamily("bold") },
-            ]}
-          >
-            {dashboardSummary?.expiring_soon_count || 0}
-          </Text>
-          <Text
-            style={[
-              styles.secondaryStatLabel,
-              { color: "#F57C00", fontFamily: getFontFamily("medium") },
-            ]}
-          >
-            {t("home.expiringSoon")}
-          </Text>
-        </View>
-
-        {(dashboardSummary?.expired_count || 0) > 0 && (
-          <View
-            style={[
-              styles.secondaryStatCard,
-              styles.expiredCard,
-              { backgroundColor: "#FFEBEE", borderColor: "#FFCDD2" },
-            ]}
-          >
-            <Text
-              style={[
-                styles.secondaryStatNumber,
-                { color: "#D32F2F", fontFamily: getFontFamily("bold") },
-              ]}
-            >
-              {dashboardSummary?.expired_count}
-            </Text>
-            <Text
-              style={[
-                styles.secondaryStatLabel,
-                { color: "#D32F2F", fontFamily: getFontFamily("medium") },
-              ]}
-            >
-              {t("home.expired")}
-            </Text>
-          </View>
-        )}
+        {/* ⚠️ Expired */}
+        <StatCard
+          count={dashboardSummary?.expired_count ?? 0}
+          label={t("home.expired")}
+          backgroundColor="#FFFFFF"
+          countColor="#D32F2F"
+          labelColor="#4A4A4A"
+          imageSource={require("../../assets/images/home/expired_item.png")}
+          countFontFamily={getLocalizedFontFamily(language, "bold")}
+          labelFontFamily={getLocalizedFontFamily(language, "medium")}
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  statsSection: { paddingVertical: 16 },
-  primaryStatCard: {
-    marginHorizontal: 20,
-    marginBottom: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  primaryStatContent: { flexDirection: "row", alignItems: "center", flex: 1 },
-  primaryStatIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  primaryStatText: { flex: 1 },
-  primaryStatNumber: { fontSize: 28, color: "#fff", marginBottom: 2 },
-  primaryStatLabel: { fontSize: 16, color: "#fff", marginBottom: 2 },
-  primaryStatSubtext: { fontSize: 12, color: "rgba(255,255,255,0.8)" },
-  secondaryStatsGrid: {
+  statsSection: { paddingVertical: 8 },
+  cardsRow: {
     flexDirection: "row",
     paddingHorizontal: 20,
     gap: 12,
   },
-  secondaryStatCard: {
+  card: {
     flex: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
     borderRadius: 16,
-    alignItems: "center",
+    position: "relative",
+    // 🪽 Shadow ตามสเปก: 0px 1px 2px 0px #0000001A
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    // 🧱 Border ตามสเปก: 1px solid #EEEBF0
+    borderWidth: 1,
+    borderColor: "#EEEBF0",
   },
-  expiredCard: { borderWidth: 1 },
-  secondaryStatNumber: { fontSize: 20, marginBottom: 4 },
-  secondaryStatLabel: { fontSize: 11, textAlign: "center" },
+  cardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    zIndex: 2,
+  },
+  count: { fontSize: 24, marginBottom: 2 },
+  label: { fontSize: 12 },
+  cornerArt: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 64,
+    height: 64,
+    overflow: "hidden",
+    // 🔲 ให้มุมบนขวาของกรอบ cornerArt โค้งเท่ากับการ์ด เพื่อไม่ให้เป็นขอบเหลี่ยม
+    borderTopRightRadius: 16,
+    zIndex: 1,
+  },
+  circleOne: {
+    position: "absolute",
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: "#EFEFEF",
+    top: -70,
+    right: -64,
+  },
+  circleTwo: {
+    position: "absolute",
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: "#E6E6E6",
+    top: -100,
+    right: -64,
+  },
+  cornerImage: {
+    position: "absolute",
+    width: 32,
+    height: 32,
+    top: 10,
+    right: 10,
+  },
 });
